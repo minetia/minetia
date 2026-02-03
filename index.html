@@ -1,13 +1,9 @@
 <!DOCTYPE html>
 <html lang="ko" data-theme="dark">
-<head><meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="mobile-web-app-capable" content="yes">
-<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/825/825540.png">
-
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Construction Master Final v42 (Fixed)</title>
+    <title>Construction Master Final v43 (ETF Added)</title>
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <style>
         /* [1. 테마 및 변수] */
@@ -139,105 +135,25 @@
         
         #chartContainer { width: 100%; height: 100%; min-height: 500px; background: #000; border-radius: 16px; overflow: hidden; }
         
-        /* [수정됨] 유튜브 플레이어 (오버레이 제거, 버튼 배치 최적화) */
         #ytPlayerContainer {
-            width: calc(100% + 32px); /* 가로 꽉 차게 */
-            margin-left: -16px; 
-            position: relative; 
-            margin-bottom: 20px;
-            display: none; 
-            transition: all 0.3s ease-in-out;
-            z-index: 100;
+            width: calc(100% + 32px); margin-left: -16px; position: relative; margin-bottom: 20px; display: none; transition: all 0.3s ease-in-out; z-index: 100;
         }
-        
-        #ytPlayerWrapper { 
-            width: 100%; 
-            aspect-ratio: 16/9; 
-            background: #000; 
-            overflow: hidden; 
-            position: relative; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-
-        /* 1. 스크롤 내렸을 때 상단 고정 (Sticky Top) */
-        #ytPlayerContainer.sticky-top-mode {
-            position: fixed;
-            top: 0; left: 0; width: 100%;
-            margin-left: 0; margin-bottom: 0;
-            z-index: 9999;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.7);
-            animation: slideDown 0.3s forwards;
-        }
-
-        /* 2. ★ 세로/가로 풀스크린 모드 ★ */
-        #ytPlayerContainer.full-mode {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw !important;
-            height: 100vh !important;
-            margin: 0 !important;
-            z-index: 20000; /* 최상위 */
-            background: #000;
-        }
-        #ytPlayerContainer.full-mode #ytPlayerWrapper {
-            width: 100%; height: 100%;
-            aspect-ratio: unset;
-            border-radius: 0;
-        }
-        /* 전체화면일 때 소리버튼 위치 조정 */
-        #ytPlayerContainer.full-mode .yt-sound-btn {
-            top: 80px; bottom: auto; right: 20px;
-        }
-
+        #ytPlayerWrapper { width: 100%; aspect-ratio: 16/9; background: #000; overflow: hidden; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        #ytPlayerContainer.sticky-top-mode { position: fixed; top: 0; left: 0; width: 100%; margin-left: 0; margin-bottom: 0; z-index: 9999; box-shadow: 0 5px 20px rgba(0,0,0,0.7); animation: slideDown 0.3s forwards; }
+        #ytPlayerContainer.full-mode { position: fixed; top: 0; left: 0; width: 100vw !important; height: 100vh !important; margin: 0 !important; z-index: 20000; background: #000; }
+        #ytPlayerContainer.full-mode #ytPlayerWrapper { width: 100%; height: 100%; aspect-ratio: unset; border-radius: 0; }
+        #ytPlayerContainer.full-mode .yt-sound-btn { top: 80px; bottom: auto; right: 20px; }
         @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
-
         #ytPlaceholder { display: none; width: 100%; aspect-ratio: 16/9; }
-        
-        /* iframe: pointer-events auto로 터치 가능하게 */
         #ytIframe { width: 100%; height: 100%; border: none; pointer-events: auto; }
         
-        /* 소리 켜기 버튼 (우측 상단) */
-        .yt-sound-btn {
-            position: absolute; top: 15px; right: 15px; 
-            background: rgba(79, 70, 229, 0.9); color: #fff;
-            border: none; border-radius: 20px; padding: 6px 14px;
-            font-size: 12px; font-weight: 700; cursor: pointer; z-index: 50; /* iframe 위 */
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-            pointer-events: auto;
-        }
-
-        /* 꽉찬 화면 버튼 (중앙 하단) */
-        .yt-full-btn {
-            position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.7); color: #fff; border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 20px; padding: 6px 14px;
-            font-size: 12px; font-weight: 700; cursor: pointer; z-index: 50;
-            backdrop-filter: blur(4px);
-            pointer-events: auto;
-        }
+        .yt-sound-btn { position: absolute; top: 15px; right: 15px; background: rgba(79, 70, 229, 0.9); color: #fff; border: none; border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer; z-index: 50; box-shadow: 0 2px 5px rgba(0,0,0,0.5); pointer-events: auto; }
+        .yt-full-btn { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.7); color: #fff; border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer; z-index: 50; backdrop-filter: blur(4px); pointer-events: auto; }
         
         .sticky-search { position: sticky; top: -20px; z-index: 10; background: var(--bg-grad); padding-bottom: 10px; padding-top: 5px; margin-bottom: 10px; }
         
-        /* 정보 메뉴 그리드 (100개 대응) */
-        .info-menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .info-menu-item {
-            background: var(--input-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 15px 5px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.2s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-        }
+        .info-menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        .info-menu-item { background: var(--input-bg); border: 1px solid var(--border); border-radius: 12px; padding: 15px 5px; text-align: center; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 8px; }
         .info-menu-item:hover { border-color: var(--primary); background: rgba(79, 70, 229, 0.1); transform: translateY(-2px); }
         .info-menu-icon { font-size: 24px; }
         .info-menu-title { font-size: 12px; font-weight: 700; color: var(--text-main); word-break: keep-all; line-height: 1.3; }
@@ -247,7 +163,6 @@
         .post-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; background: var(--primary); color: #fff; margin-right: 6px; }
         
         #detailChartContainer { width: 100%; height: 300px; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 15px; border: var(--border); }
-
         .ai-report-box { background: var(--input-bg); border-radius: 12px; padding: 20px; margin-top: 10px; border: 1px solid var(--primary); width: 100%; }
         .ai-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
         .ai-badge { background: var(--ai-bg); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; }
@@ -275,6 +190,22 @@
         .yt-board-item { padding: 10px 15px; border-bottom: 1px solid var(--border); cursor: pointer; font-size: 14px; color: var(--text-main); display: flex; justify-content: space-between; }
         
         .detail-body { font-size: 15px; line-height: 1.7; color: var(--text-main); white-space: pre-wrap; margin-top: 20px; }
+
+        /* [NEW] ETF 스타일 */
+        .etf-card { background: var(--input-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .etf-card:hover { border-color: var(--primary); background: rgba(79, 70, 229, 0.1); }
+        .etf-ticker { font-size: 16px; font-weight: 800; color: var(--text-main); }
+        .etf-name { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
+        .etf-flow { font-size: 14px; font-weight: 700; text-align: right; }
+        
+        /* 테이블 스타일 */
+        .flow-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+        .flow-table th { color: var(--text-sub); text-align: left; padding: 8px; border-bottom: 1px solid var(--border); font-weight: 600; }
+        .flow-table td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-main); }
+        .flow-in { color: var(--up); font-weight: 700; }
+        .flow-out { color: var(--down); font-weight: 700; }
+        .flow-row-new { animation: highlight 1s ease-out; }
+        @keyframes highlight { 0% { background: rgba(79, 70, 229, 0.3); } 100% { background: transparent; } }
     </style>
 </head>
 <body>
@@ -341,27 +272,52 @@
         </div>
     </div>
 
-    <div id="page-ex" class="page-container">
-        <div class="header"><h1 class="app-title">거래소 선택</h1></div>
-        <div class="ex-grid">
-            <div class="ex-item ik" onclick="setEx('UPBIT','업비트')">업비트</div>
-            <div class="ex-item ik" onclick="setEx('BITHUMB','빗썸')">빗썸</div>
-            <div class="ex-item ik" onclick="setEx('COINONE','코인원')">코인원</div>
-            <div class="ex-item ik" onclick="setEx('KORBIT','코빗')">코빗</div>
-            <div class="ex-item ik" onclick="setEx('GOPAX','고팍스')">고팍스</div>
+    <div id="page-etf" class="page-container">
+        <div class="header"><h1 class="app-title">💰 ETF 현황</h1></div>
+        
+        <div id="etf-list-view">
+            <div style="font-size:12px; color:var(--text-sub); margin-bottom:15px;">* 미 현물 ETF 실시간 유입 추정치입니다.</div>
+            <div id="etfListContainer"></div>
         </div>
-        <div style="font-size:14px; font-weight:700; color:var(--text-sub); margin-bottom:15px; margin-top:30px;">해외 (USDT/USD)</div>
-        <div class="ex-grid">
-            <div class="ex-item iu" onclick="setEx('BINANCE','바이낸스')">바이낸스</div>
-            <div class="ex-item iu" onclick="setEx('BYBIT','바이비트')">바이비트</div>
-            <div class="ex-item iu" onclick="setEx('OKX','OKX')">OKX</div>
-            <div class="ex-item iu" onclick="setEx('BITGET','비트겟')">비트겟</div>
-            <div class="ex-item iu" onclick="setEx('COINBASE','코인베이스')">코인베이스</div>
-            <div class="ex-item iu" onclick="setEx('KRAKEN','크라켄')">크라켄</div>
-            <div class="ex-item iu" onclick="setEx('GATEIO','게이트')">게이트</div>
-            <div class="ex-item iu" onclick="setEx('KUCOIN','쿠코인')">쿠코인</div>
-            <div class="ex-item iu" onclick="setEx('HUOBI','HTX')">HTX</div>
-            <div class="ex-item iu" onclick="setEx('BITSTAMP','비트스탬프')">비트스탬프</div>
+
+        <div id="etf-detail-view" style="display:none;">
+            <div class="info-back" onclick="closeEtfDetail()">◀ ETF 목록으로</div>
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div id="etfDetailTicker" style="font-size:24px; font-weight:800; color:#818cf8;">IBIT</div>
+                        <div id="etfDetailName" style="font-size:13px; color:var(--text-sub);">BlackRock Bitcoin Trust</div>
+                    </div>
+                    <div id="etfDetailBadge" class="ai-badge">LIVE</div>
+                </div>
+                <div style="margin-top:20px; display:flex; gap:10px;">
+                    <div class="strat-item" style="flex:1;">
+                        <div class="strat-label">오늘 유입량</div>
+                        <div id="etfTotalFlow" class="strat-val flow-in">+0 BTC</div>
+                    </div>
+                    <div class="strat-item" style="flex:1;">
+                        <div class="strat-label">운용 자산 (AUM)</div>
+                        <div id="etfAum" class="strat-val">$18.5B</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="margin:0 0 10px 0; font-size:16px;">⏱️ 실시간 기관 수급 (Live)</h3>
+                <div style="overflow-x:auto;">
+                    <table class="flow-table">
+                        <thead>
+                            <tr>
+                                <th>시간</th>
+                                <th>기관명</th>
+                                <th style="text-align:right;">수량 (BTC)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="etfFlowTableBody">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -412,9 +368,7 @@
         <div id="ytPlayerContainer">
             <div id="ytPlayerWrapper">
                 <button id="ytSoundBtn" class="yt-sound-btn" onclick="unmuteVideo()">🔊 소리 켜기</button>
-                
                 <button class="yt-full-btn" onclick="toggleVerticalFull()">📱 세로 꽉찬화면</button>
-
                 <iframe id="ytIframe" src="" allowfullscreen allow="autoplay; encrypted-media"></iframe>
             </div>
         </div>
@@ -440,7 +394,7 @@
         <div class="nav-item active" onclick="goPage('home')"><span class="nav-icon">🏠</span><span>홈</span></div>
         <div class="nav-item" onclick="goPage('youtube')"><span class="nav-icon">📺</span><span>유튜브</span></div>
         <div class="nav-item" onclick="goPage('chart')"><span class="nav-icon">📈</span><span>차트</span></div>
-        <div class="nav-item" onclick="goPage('ex')"><span class="nav-icon">🏦</span><span>거래소</span></div>
+        <div class="nav-item" onclick="goPage('etf')"><span class="nav-icon">💰</span><span>ETF</span></div>
         <div class="nav-item" onclick="goPage('info')"><span class="nav-icon">ℹ️</span><span>정보</span></div>
     </div>
 
@@ -454,7 +408,6 @@
             <button class="btn-full" onclick="applyStudies()" style="background:var(--primary); color:#fff;">적용하기</button>
         </div>
     </div>
-
     <div id="detailIndiModal" class="modal" onclick="if(event.target==this)this.style.display='none'">
         <div class="modal-con" style="max-width:800px; height:90vh;">
             <div class="mod-head" style="margin-bottom:15px; display:flex; justify-content:space-between; align-items:center;">
@@ -481,14 +434,26 @@
     let currentVideoId = '';
     let isVerticalFull = false;
 
+    // [NEW] ETF Data
+    const etfList = [
+        { ticker: "IBIT", name: "BlackRock Bitcoin Trust", flow: "+850 BTC", price: "$35.42" },
+        { ticker: "FBTC", name: "Fidelity Wise Origin", flow: "+420 BTC", price: "$52.10" },
+        { ticker: "BITB", name: "Bitwise Bitcoin ETF", flow: "+150 BTC", price: "$28.90" },
+        { ticker: "ARKB", name: "ARK 21Shares Bitcoin", flow: "+90 BTC", price: "$44.30" },
+        { ticker: "GBTC", name: "Grayscale Bitcoin Trust", flow: "-120 BTC", price: "$48.50" },
+        { ticker: "ETHE", name: "Grayscale Ethereum Trust", flow: "-450 ETH", price: "$22.10" },
+        { ticker: "EZET", name: "Franklin Ethereum ETF", flow: "+300 ETH", price: "$18.40" }
+    ];
+    let etfInterval = null;
+
     const coinMap = { "비트":"BTC", "btc":"BTC", "이더":"ETH", "eth":"ETH", "리플":"XRP", "xrp":"XRP", "도지":"DOGE", "doge":"DOGE", "솔라나":"SOL", "sol":"SOL", "에이다":"ADA", "ada":"ADA", "트론":"TRX", "trx":"TRX" };
     const channelList = ["슈카월드", "알고란", "찰리브라웅", "코인버핏", "나씨 TV", "닥터비트맨", "소주몽", "코인구조대", "한방코인", "도지아빠", "비트맨", "코인왕자", "강환국", "돈복남", "박호두", "랄로", "매억남", "버거형", "스트리트 사나이", "짭구", "강은호", "사또", "호주먼", "코인탐정", "부빗"];
     const indicators = [{id:"MASimple@tv-basicstudies", n:"Simple Moving Average (SMA)", desc:"가장 기본적인 이동평균선. 특정 기간의 종가 평균을 연결합니다."}, {id:"MAExp@tv-basicstudies", n:"Exponential Moving Average (EMA)", desc:"최근 가격에 가중치를 두어 민감하게 반응하는 이동평균선입니다."}, {id:"BB@tv-basicstudies", n:"Bollinger Bands", desc:"표준편차를 이용해 가격 변동성 범위(밴드)를 표시합니다."}, {id:"RSI@tv-basicstudies", n:"Relative Strength Index (RSI)", desc:"과매수(70이상)/과매도(30이하) 구간을 파악하는 오실레이터입니다."}, {id:"MACD@tv-basicstudies", n:"MACD", desc:"이동평균 수렴확산 지수. 추세의 방향과 강도를 확인합니다."}, {id:"Stochastic@tv-basicstudies", n:"Stochastic Oscillator", desc:"현재 가격이 일정 기간 가격 범위 중 어디에 위치하는지 백분율로 표시합니다."}, {id:"IchimokuCloud@tv-basicstudies", n:"Ichimoku Cloud", desc:"전환선, 기준선, 후행스팬, 구름대를 통해 지지/저항과 추세를 종합 분석합니다."}, {id:"ParabolicSAR@tv-basicstudies", n:"Parabolic SAR", desc:"점선으로 추세 전환 시점을 파악하고 손절가를 설정하는 데 유용합니다."}, {id:"SuperTrend@tv-basicstudies", n:"SuperTrend", desc:"가격 변동성을 반영하여 현재 추세(상승/하락)를 직관적으로 보여줍니다."}, {id:"Volume@tv-basicstudies", n:"Volume", desc:"시장 참여도를 나타내는 가장 기초적이고 중요한 지표입니다."}, {id:"VWAP@tv-basicstudies", n:"VWAP", desc:"거래량 가중 평균 가격. 기관 투자자들이 주로 참고하는 기준 가격입니다."}, {id:"OBV@tv-basicstudies", n:"On Balance Volume (OBV)", desc:"거래량을 통해 주가 추세의 힘을 분석하는 누적 지표입니다."}, {id:"ATR@tv-basicstudies", n:"Average True Range (ATR)", desc:"시장의 변동성 크기를 측정합니다. 손절폭 설정에 유용합니다."}, {id:"CCI@tv-basicstudies", n:"Commodity Channel Index (CCI)", desc:"현재 가격이 이동평균선과 얼마나 떨어져 있는지를 측정합니다."}, {id:"MFI@tv-basicstudies", n:"Money Flow Index (MFI)", desc:"거래량을 고려한 RSI. 자금의 유입과 유출 강도를 측정합니다."}, {id:"ADX@tv-basicstudies", n:"Average Directional Index (ADX)", desc:"추세의 '강도'를 측정합니다. 추세가 있는지 없는지 판단할 때 씁니다."}, {id:"PivotPointsStandard@tv-basicstudies", n:"Pivot Points Standard", desc:"전일 고가, 저가, 종가를 이용해 당일의 지지와 저항 수준을 예측합니다."}, {id:"WilliamsAlligator@tv-basicstudies", n:"Williams Alligator", desc:"세 가지 이동평균선을 악어의 입에 비유하여 추세 시작을 포착합니다."}, {id:"TRIX@tv-basicstudies", n:"TRIX", desc:"지수 이동평균의 변화율을 세 번 평활화하여 노이즈를 제거한 지표입니다."}, {id:"KST@tv-basicstudies", n:"Know Sure Thing (KST)", desc:"다양한 주기의 ROC를 가중 평균하여 장기 추세를 파악합니다."}, {id:"ChaikinMoneyFlow@tv-basicstudies", n:"Chaikin Money Flow (CMF)", desc:"매집과 분산을 측정하여 자금의 흐름을 파악합니다."}, {id:"Aroon@tv-basicstudies", n:"Aroon", desc:"추세의 강도와 방향 전환 가능성을 측정하는 지표입니다."}, {id:"ChoppinessIndex@tv-basicstudies", n:"Choppiness Index", desc:"시장이 추세 구간인지 횡보(박스권) 구간인지를 판단합니다."}, {id:"ConnorsRSI@tv-basicstudies", n:"Connors RSI", desc:"단기 트레이딩에 특화된 RSI의 변형 버전입니다."}, {id:"FisherTransform@tv-basicstudies", n:"Fisher Transform", desc:"가격 데이터를 정규 분포로 변환하여 반전 신호를 명확히 합니다."}, {id:"HullMA@tv-basicstudies", n:"Hull Moving Average", desc:"기존 이동평균선의 후행성을 개선하여 반응 속도를 높인 이평선입니다."}, {id:"KDJ@tv-basicstudies", n:"KDJ", desc:"스토캐스틱에 J선을 추가하여 민감도를 높인 지표입니다."}, {id:"MassIndex@tv-basicstudies", n:"Mass Index", desc:"고가와 저가의 폭(Range) 변화를 통해 추세 반전을 예측합니다."}, {id:"PriceOscillator@tv-basicstudies", n:"Price Oscillator (PPO)", desc:"두 이동평균선의 차이를 비율(%)로 나타낸 모멘텀 지표입니다."}, {id:"RateOfChange@tv-basicstudies", n:"Rate Of Change (ROC)", desc:"금일 가격과 n일 전 가격을 비교하여 등락률을 측정합니다."}, {id:"SMI@tv-basicstudies", n:"SMI Ergodic Indicator", desc:"스토캐스틱을 개선하여 잘못된 신호를 줄인 오실레이터입니다."}, {id:"SmoothedMA@tv-basicstudies", n:"Smoothed Moving Average", desc:"노이즈를 줄이기 위해 평활화된 이동평균선입니다."}, {id:"TripleEMA@tv-basicstudies", n:"Triple EMA (TEMA)", desc:"EMA를 세 번 계산하여 후행성을 극도로 줄인 지표입니다."}, {id:"UltimateOscillator@tv-basicstudies", n:"Ultimate Oscillator", desc:"단기, 중기, 장기 압력을 결합하여 과매수/과매도를 판단합니다."}, {id:"VolumeOscillator@tv-basicstudies", n:"Volume Oscillator", desc:"단기 거래량 이평과 장기 거래량 이평의 차이를 보여줍니다."}, {id:"Vortex@tv-basicstudies", n:"Vortex Indicator", desc:"긍정적/부정적 추세의 소용돌이를 통해 추세 전환을 포착합니다."}, {id:"VWMA@tv-basicstudies", n:"Volume Weighted Moving Average (VWMA)", desc:"거래량을 가중치로 둔 이동평균선입니다."}, {id:"WilliamsR@tv-basicstudies", n:"Williams %R", desc:"현재 가격이 지난 기간의 가격 범위 중 어디에 있는지 측정합니다."}, {id:"Donchian@tv-basicstudies", n:"Donchian Channels", desc:"일정 기간의 최고가와 최저가를 밴드로 표시하여 돌파 매매에 씁니다."}, {id:"KeltnerChannels@tv-basicstudies", n:"Keltner Channels", desc:"ATR을 기반으로 한 밴드 지표로, 볼린저 밴드와 유사합니다."}, {id:"Envelopes@tv-basicstudies", n:"Envelopes", desc:"이동평균선 위아래로 일정 비율(%)만큼 떨어진 선을 그립니다."}, {id:"CorrelationCoefficient@tv-basicstudies", n:"Correlation Coefficient", desc:"두 자산 간의 가격 움직임 연관성을 -1에서 1 사이로 측정합니다."}, {id:"DetrendedPriceOscillator@tv-basicstudies", n:"Detrended Price Oscillator", desc:"장기 추세를 제거하여 단기 사이클을 파악하기 쉽게 합니다."}, {id:"EaseOfMovement@tv-basicstudies", n:"Ease Of Movement", desc:"가격이 거래량에 비해 얼마나 쉽게 움직이는지를 측정합니다."}, {id:"LinearRegression@tv-basicstudies", n:"Linear Regression", desc:"통계적 추세선을 그려 가격의 방향성을 보여줍니다."}, {id:"MedianPrice@tv-basicstudies", n:"Median Price", desc:"고가와 저가의 평균값으로 추세를 단순화합니다."}, {id:"MoneyFlow@tv-basicstudies", n:"Money Flow", desc:"가격과 거래량을 결합하여 자금의 유입 강도를 봅니다."}, {id:"PriceVolumeTrend@tv-basicstudies", n:"Price Volume Trend", desc:"OBV와 비슷하지만 가격 등락폭까지 반영한 거래량 지표입니다."}, {id:"ZigZag@tv-basicstudies", n:"Zig Zag", desc:"노이즈를 제거하고 주요 고점과 저점을 직선으로 연결합니다."}
     ];
-
+    
     // [100개 메뉴 데이터]
     const infoMenus = [
-        "🚨 실시간 뉴스", "😱 공포/탐욕 지수", "🔥 김치 프리미엄", "📊 비트코인 도미넌스", "🐳 고래 포착", "🇺🇸 나스닥 선물", "💵 달러 인덱스 (DXY)", "🪙 테더 도미넌스", "📈 롱/숏 비율", "📉 펀딩비 현황", "🔓 락업 해제", "⛏️ 해시레이트", "🏦 미 연준 금리", "🛒 CPI 소비자물가", "🏭 PPI 생산자물가", "🛢️ 국제 유가 (WTI)", "🥇 금 시세", "🥈 은 시세", "👛 거래소 보유량", "🗺️ 청산 맵", "⚡ 이더리움 가스비", "💎 NFT 거래량", "🚀 디파이 (DeFi) TVL", "⚖️ 스테이블코인 시총", "📅 경제 캘린더", "🧢 시가총액 순위", "📈 급등 코인", "📉 급락 코인", "🤖 AI 매매 시그널", "🐦 트위터 트렌드", "📉 미결제 약정 (OI)", "🎯 RSI 히트맵", "🌡️ 알트코인 시즌 지수", "🔄 거래소 유출입", "💰 비트코인 ETF 유입", "📉 이더리움 ETF 유입", "🐋 그레이스케일 프리미엄", "🏢 마이크로스트래티지 보유", "🚗 테슬라 비트코인 보유", "⛏️ 채굴 난이도", "📊 채굴자 보유량", "📉 MVRV 비율", "📈 NUPL (미실현 손익)", "🔄 SOPR (지출 수익률)", "📏 푸엘 멀티플", "📉 스톡 투 플로우", "🥧 파이 사이클 탑", "🕯️ 골든/데드 크로스", "🌊 볼린저 밴드 스퀴즈", "📉 다이버전스 포착", "🌐 레이어 1 (L1) 트렌드", "⚡ 레이어 2 (L2) 트렌드", "🎮 게임/P2E 섹터", "🧠 AI 코인 섹터", "🐕 밈 코인 섹터", "🕶️ 프라이버시 코인", "💾 저장성(Storage) 코인", "🔗 오라클(Oracle) 섹터", "🏦 DAO 거버넌스", "🚀 런치패드 일정", "🎁 에어드랍 일정", "✂️ 반감기 카운트다운", "🇰🇷 업비트 거래량", "🇰🇷 빗썸 거래량", "🚨 트래블룰 현황", "📉 실업수당 청구", "📊 미국 GDP 성장률", "💳 개인소비지출 (PCE)", "📉 미국 10년물 국채", "😨 VIX 공포지수", "📉 구리 시세", "🌾 원자재 종합", "📉 환율 (엔/달러)", "📉 환율 (유로/달러)", "🤖 챗GPT 코인 분석", "🔍 구글 검색 트렌드", "📱 텔레그램 호재", "📝 레딧 커뮤니티", "💻 깃허브 개발 활성도", "📉 활성 지갑 수", "🔄 트랜잭션 수", "💰 평균 거래 수수료", "⚡ 라이트닝 네트워크", "🌉 브릿지 거래량", "📉 덱스(DEX) 거래량", "🥩 스테이킹 비율", "🔥 소각(Burn) 현황", "📉 인플레이션율", "🏦 중앙은행 대차대조표", "📉 옵션 만기일", "🎯 맥스 페인 가격", "📉 내재 변동성 (IV)", "📉 역사적 변동성 (HV)", "⚖️ 코인베이스 프리엄", "🇰🇷 김프 차트 (역프)", "📉 바이낸스 펀딩비", "📉 바이비트 펀딩비", "🐋 고래 지갑 이동", "🚨 해킹/보안 이슈", "📰 주요 거래소 공지"
+        "🚨 실시간 뉴스", "😱 공포/탐욕 지수", "🔥 김치 프리미엄", "📊 비트코인 도미넌스", "🐳 고래 포착", "🇺🇸 나스닥 선물", "💵 달러 인덱스 (DXY)", "🪙 테더 도미넌스", "📈 롱/숏 비율", "📉 펀딩비 현황", "🔓 락업 해제", "⛏️ 해시레이트", "🏦 미 연준 금리", "🛒 CPI 소비자물가", "🏭 PPI 생산자물가", "🛢️ 국제 유가 (WTI)", "🥇 금 시세", "🥈 은 시세", "👛 거래소 보유량", "🗺️ 청산 맵", "⚡ 이더리움 가스비", "💎 NFT 거래량", "🚀 디파이 (DeFi) TVL", "⚖️ 스테이블코인 시총", "📅 경제 캘린더", "🧢 시가총액 순위", "📈 급등 코인", "📉 급락 코인", "🤖 AI 매매 시그널", "🐦 트위터 트렌드", "📉 미결제 약정 (OI)", "🎯 RSI 히트맵", "🌡️ 알트코인 시즌 지수", "🔄 거래소 유출입", "💰 비트코인 ETF 유입", "📉 이더리움 ETF 유입", "🐋 그레이스케일 프리미엄", "🏢 마이크로스트래티지 보유", "🚗 테슬라 비트코인 보유", "⛏️ 채굴 난이도", "📊 채굴자 보유량", "📉 MVRV 비율", "📈 NUPL (미실현 손익)", "🔄 SOPR (지출 수익률)", "📏 푸엘 멀티플", "📉 스톡 투 플로우", "🥧 파이 사이클 탑", "🕯️ 골든/데드 크로스", "🌊 볼린저 밴드 스퀴즈", "📉 다이버전스 포착", "🌐 레이어 1 (L1) 트렌드", "⚡ 레이어 2 (L2) 트렌드", "🎮 게임/P2E 섹터", "🧠 AI 코인 섹터", "🐕 밈 코인 섹터", "🕶️ 프라이버시 코인", "💾 저장성(Storage) 코인", "🔗 오라클(Oracle) 섹터", "🏦 DAO 거버넌스", "🚀 런치패드 일정", "🎁 에어드랍 일정", "✂️ 반감기 카운트다운", "🇰🇷 업비트 거래량", "🇰🇷 빗썸 거래량", "🚨 트래블룰 현황", "📉 실업수당 청구", "📊 미국 GDP 성장률", "💳 개인소비지출 (PCE)", "📉 미국 10년물 국채", "😨 VIX 공포지수", "📉 구리 시세", "🌾 원자재 종합", "📉 환율 (엔/달러)", "📉 환율 (유로/달러)", "🤖 챗GPT 코인 분석", "🔍 구글 검색 트렌드", "📱 텔레그램 호재", "📝 레딧 커뮤니티", "💻 깃허브 개발 활성도", "📉 활성 지갑 수", "🔄 트랜잭션 수", "💰 평균 거래 수수료", "⚡ 라이트닝 네트워크", "🌉 브릿지 거래량", "📉 덱스(DEX) 거래량", "🥩 스테이킹 비율", "🔥 소각(Burn) 현황", "📉 인플레이션율", "🏦 중앙은행 대차대조표", "📉 옵션 만기일", "🎯 맥스 페인 가격", "📉 내재 변동성 (IV)", "📉 역사적 변동성 (HV)", "⚖️ 코인베이스 프리미엄", "🇰🇷 김프 차트 (역프)", "📉 바이낸스 펀딩비", "📉 바이비트 펀딩비", "🐋 고래 지갑 이동", "🚨 해킹/보안 이슈", "📰 주요 거래소 공지"
     ];
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -503,14 +468,14 @@
         initIndi();
         initDetailIndi();
         initYtBoard();
+        initEtfList(); // [NEW] ETF 초기화
         
-        // Sticky Top Logic
+        // Sticky Top Logic with Landscape Detection
         const pageYoutube = el('page-youtube');
         pageYoutube.addEventListener('scroll', () => {
             const playerCon = el('ytPlayerContainer');
             const placeholder = el('ytPlaceholder');
-            // 전체화면이 아닐 때만 Sticky 작동
-            if (playerCon.style.display !== 'none' && !isVerticalFull) {
+            if (playerCon.style.display !== 'none') {
                 if (pageYoutube.scrollTop > 10) {
                     playerCon.classList.add('sticky-top-mode');
                     placeholder.style.display = 'block';
@@ -521,7 +486,6 @@
             }
         });
 
-        // 📱 가로/세로 회전 시 자동 전체화면
         window.addEventListener("orientationchange", () => {
             const playerCon = el('ytPlayerContainer');
             if (window.orientation === 90 || window.orientation === -90) {
@@ -545,7 +509,6 @@
             playerCon.classList.remove('sticky-top-mode'); 
         } else {
             playerCon.classList.remove('full-mode');
-            // 스크롤 위치에 따라 다시 스티키 적용
             const pageYoutube = el('page-youtube');
             if (pageYoutube.scrollTop > 10) {
                 playerCon.classList.add('sticky-top-mode');
@@ -557,18 +520,17 @@
         document.querySelectorAll('.page-container').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         el('page-'+pageId).classList.add('active');
-        const navIdx = {'home':0, 'youtube':1, 'chart':2, 'ex':3, 'info':4}[pageId];
+        // ETF는 3번 (인덱스3), 정보는 4번
+        const navIdx = {'home':0, 'youtube':1, 'chart':2, 'etf':3, 'info':4}[pageId];
         document.querySelectorAll('.nav-item')[navIdx].classList.add('active');
+        
         if(pageId === 'chart') setTimeout(loadChart, 300);
         if(pageId === 'youtube' && !el('youtubeList').innerHTML.includes('yt-item')) { el('ytSearch').value = curSym; searchYoutube(); }
+        if(pageId === 'etf') clearInterval(etfInterval); // 리셋
         if(pageId !== 'info') isDetailOpen = false;
     }
 
-    function goToNewsBoard() {
-        goPage('info'); 
-        openBoard(`${curSym} 관련 주요 소식`);
-    }
-
+    function goToNewsBoard() { goPage('info'); openBoard(`${curSym} 관련 주요 소식`); }
     function toggleTheme() {
         const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', next);
@@ -576,7 +538,6 @@
         el('themeBtn').innerText = next === 'dark' ? '🌙' : '☀️';
         if(el('page-chart').classList.contains('active')) loadChart();
     }
-
     function chgCoin() {
         const input = el('search').value.trim();
         if(input) {
@@ -585,7 +546,6 @@
             el('search').value = ""; el('search').placeholder = `${symbol} 검색됨`; el('search').blur();
         }
     }
-    
     function changeSymbol(symbol) {
         if(symbol !== curSym) {
             curSym = symbol; localStorage.setItem('curSym', curSym);
@@ -594,7 +554,6 @@
             updateCoinLabels(curSym); connectWS(curSym);
         }
     }
-
     function updateCoinLabels(sym) { el('lblKrSym').innerText = sym; el('lblUsSym').innerText = sym; }
 
     let wsUpbit, wsBinance;
@@ -623,14 +582,12 @@
             calcPremium(); if(isDetailOpen && detailSymbol === curSym) renderAIReport();
         };
     }
-
     function calcPremium() {
         if(priceKr > 0 && priceUs > 0) {
             const prem = ((priceKr - (priceUs * exRate)) / (priceUs * exRate)) * 100;
             el('premVal').innerText = `${prem.toFixed(2)}%`; el('premVal').style.color = prem > 0 ? 'var(--up)' : 'var(--down)';
         }
     }
-
     function setCalcMode(mode) {
         calcMode = mode;
         el('btnKrw').className = mode === 'KRW' ? 'mode-btn active' : 'mode-btn';
@@ -641,27 +598,21 @@
         if(mode === 'USDT' && priceUs > 0) el('nP').placeholder = priceUs.toLocaleString(undefined, {minimumFractionDigits: 4});
         cal(); 
     }
-
     function cal(mode) {
         const cp = parseFloat(el('cP').value)||0, cq = parseFloat(el('cQ').value)||0;
         let np = parseFloat(el('nP').value); 
         if(!np) np = (calcMode === 'KRW' ? priceKr : priceUs) || 0;
-        
         let nq = parseFloat(el('nQ').value)||0, na = parseFloat(el('nA').value)||0;
         if(np > 0) { 
             if(mode===1) { nq = na/np; el('nQ').value = parseFloat(nq.toFixed(8)); } 
             else if(mode===0) { na = np*nq; el('nA').value = calcMode==='KRW' ? Math.floor(na) : parseFloat(na.toFixed(2)); } 
         }
-        
         const tQ = cq+nq, tA = (cp*cq)+na, avg = tQ>0 ? tA/tQ : 0;
-        
         const fmt = (num) => calcMode === 'KRW' ? Math.floor(num).toLocaleString() : num.toLocaleString(undefined, {minimumFractionDigits: 4});
         const fmtAmt = (num) => calcMode === 'KRW' ? Math.floor(num).toLocaleString() : num.toLocaleString(undefined, {minimumFractionDigits: 2});
-
         el('fAv').innerText = fmt(avg);
         el('resQty').innerText = parseFloat(tQ.toFixed(8)).toLocaleString();
         el('resAmt').innerText = fmtAmt(tA);
-        
         if(np>0 && tA>0) { 
             const pnl = ((tQ*np - tA)/tA)*100; 
             el('resPnl').innerHTML = `<span class="${pnl>0?'c-up':'c-down'}">${pnl.toFixed(2)}%</span>`; 
@@ -684,9 +635,7 @@
         const query = el('ytSearch').value.trim();
         const sort = el('ytSort').value; 
         if(!query) return;
-        
         const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=15&q=${encodeURIComponent(query)}&order=${sort}&type=video&key=${YOUTUBE_API_KEY}`;
-        
         try {
             const response = await fetch(url);
             const data = await response.json();
@@ -703,45 +652,97 @@
             const thumb = item.snippet.thumbnails.medium.url;
             const channel = item.snippet.channelTitle;
             const pubDate = item.snippet.publishedAt.substring(0, 10);
-
-            h += `<div class="yt-item" onclick="playVideo('${vidId}')">
-                    <div class="yt-thumb" style="background-image:url('${thumb}');"></div>
-                    <div class="yt-info">
-                        <div class="yt-title">${title}</div>
-                        <div class="yt-chan">${channel} • ${pubDate}</div>
-                    </div>
-                  </div>`;
+            h += `<div class="yt-item" onclick="playVideo('${vidId}')"><div class="yt-thumb" style="background-image:url('${thumb}');"></div><div class="yt-info"><div class="yt-title">${title}</div><div class="yt-chan">${channel} • ${pubDate}</div></div></div>`;
         });
         el('youtubeList').innerHTML = h;
     }
     
-    // [수정됨] 재생 오류 해결을 위한 표준 임베드 주소 적용
     function playVideo(vidId) {
         currentVideoId = vidId;
         el('ytPlayerContainer').style.display = 'block';
-        el('ytSoundBtn').style.display = 'block'; 
-        el('ytIframe').src = `https://www.youtube.com/embed/${vidId}?autoplay=1&mute=1&enablejsapi=1&playsinline=1`;
+        el('ytSoundBtn').style.display = 'block'; // 소리 버튼 표시
+        el('ytIframe').src = `http://www.youtube.com/embed/${vidId}?autoplay=1&mute=1&enablejsapi=1&playsinline=1`;
         window.scrollTo(0, 0);
     }
     
-    // [수정됨] 소리 켜기 기능 대응
     function unmuteVideo() {
         if(!currentVideoId) return;
-        el('ytSoundBtn').style.display = 'none'; 
-        el('ytIframe').src = `https://www.youtube.com/embed/${currentVideoId}?autoplay=1&mute=0&enablejsapi=1&playsinline=1`;
+        el('ytSoundBtn').style.display = 'none'; // 버튼 숨김
+        el('ytIframe').src = `http://www.youtube.com/embed/${currentVideoId}?autoplay=1&mute=0&enablejsapi=1&playsinline=1`;
     }
-    
-    function closeYtPlayer() { }
+    function closeYtPlayer() { /* 닫기 버튼 없음 */ }
 
+    // [ETF Functions]
+    function initEtfList() {
+        let h = '';
+        etfList.forEach(e => {
+            const isPos = e.flow.includes('+');
+            h += `<div class="etf-card" onclick="showEtfDetail('${e.ticker}')">
+                    <div>
+                        <div class="etf-ticker">${e.ticker}</div>
+                        <div class="etf-name">${e.name}</div>
+                    </div>
+                    <div>
+                        <div class="etf-flow" style="color:${isPos ? 'var(--up)' : 'var(--down)'}">${e.flow}</div>
+                        <div style="text-align:right; font-size:12px; color:var(--text-main);">${e.price}</div>
+                    </div>
+                  </div>`;
+        });
+        el('etfListContainer').innerHTML = h;
+    }
+
+    function showEtfDetail(ticker) {
+        el('etf-list-view').style.display = 'none';
+        el('etf-detail-view').style.display = 'block';
+        
+        const item = etfList.find(i => i.ticker === ticker);
+        el('etfDetailTicker').innerText = item.ticker;
+        el('etfDetailName').innerText = item.name;
+        el('etfTotalFlow').innerText = item.flow;
+        el('etfTotalFlow').style.color = item.flow.includes('+') ? 'var(--up)' : 'var(--down)';
+        
+        // Start simulated real-time updates
+        if(etfInterval) clearInterval(etfInterval);
+        el('etfFlowTableBody').innerHTML = ''; // Clear prev data
+        generateInflowData(); // Initial load
+        etfInterval = setInterval(generateInflowData, 2000); // 2초마다 갱신
+    }
+
+    function closeEtfDetail() {
+        el('etf-detail-view').style.display = 'none';
+        el('etf-list-view').style.display = 'block';
+        if(etfInterval) clearInterval(etfInterval);
+    }
+
+    function generateInflowData() {
+        const tbody = el('etfFlowTableBody');
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('en-US', {hour12:false});
+        
+        const orgs = ["BlackRock", "Fidelity", "Ark Invest", "Bitwise", "VanEck", "Valkyrie", "Invesco", "Franklin", "Grayscale", "WisdomTree"];
+        const org = orgs[Math.floor(Math.random() * orgs.length)];
+        
+        const isBuy = Math.random() > 0.4; // 60% buy chance
+        const typeClass = isBuy ? 'flow-in' : 'flow-out';
+        const sign = isBuy ? '+' : '-';
+        const amount = (Math.random() * 50 + 1).toFixed(2); // 1~50 BTC random
+        
+        const row = document.createElement('tr');
+        row.className = 'flow-row-new';
+        row.innerHTML = `<td>${timeStr}</td><td>${org}</td><td class="${typeClass}" style="text-align:right;">${sign}${amount}</td>`;
+        
+        tbody.insertBefore(row, tbody.firstChild);
+        
+        if(tbody.children.length > 20) tbody.removeChild(tbody.lastChild); // Limit rows
+    }
+
+    // Info & ETC functions
     function initInfoMenu() { 
         let h = ''; 
         infoMenus.forEach(m => { 
             const icon = m.split(' ')[0];
             const text = m.replace(icon, '').trim();
-            h += `<div class="info-menu-item" onclick="openBoard('${m}')">
-                    <div class="info-menu-icon">${icon}</div>
-                    <div class="info-menu-title">${text}</div>
-                  </div>`; 
+            h += `<div class="info-menu-item" onclick="openBoard('${m}')"><div class="info-menu-icon">${icon}</div><div class="info-menu-title">${text}</div></div>`; 
         }); 
         el('infoMenuContainer').innerHTML = h; 
     }
@@ -757,18 +758,15 @@
         el('detailDate').innerText = `${item.date} • 조회수 ${Math.floor(Math.random()*2000)}`; 
         el('detailBody').innerHTML = item.content;
         detailSymbol = curSym; 
-        
         let chartEx = curExCode;
         if(['COINONE','KORBIT','GOPAX'].includes(curExCode)) chartEx = 'UPBIT'; 
         if(['BITGET','GATEIO','KUCOIN','HUOBI','BITSTAMP'].includes(curExCode)) chartEx = 'BINANCE'; 
         const chartSym = `${chartEx}:${curSym}${['UPBIT','BITHUMB'].includes(chartEx)?'KRW':'USDT'}`;
         el('detailChartContainer').innerHTML = '';
         new TradingView.widget({ "autosize": true, "symbol": chartSym, "interval": "60", "timezone": "Asia/Seoul", "theme": document.documentElement.getAttribute('data-theme'), "style": "1", "locale": "kr", "toolbar_bg": "#f1f3f6", "enable_publishing": false, "hide_top_toolbar": true, "container_id": "detailChartContainer" });
-
         el('aiAnalysisContainer').innerHTML='<div style="text-align:center; padding:30px;">🔄 데이터 수신중...</div>'; 
         if(priceKr>0) renderAIReport(); 
     }
-
     function renderAIReport() { 
         const p = priceKr || 0; if(p===0) return;
         const sup = Math.floor(p * 0.98).toLocaleString();
@@ -776,24 +774,10 @@
         const stop = Math.floor(p * 0.97).toLocaleString();
         const target = Math.floor(p * 1.05).toLocaleString();
         const score = Math.floor(Math.random() * 20) + 70;
-
-        el('aiAnalysisContainer').innerHTML = `
-            <div class="ai-report-box">
-                <div class="ai-header"><span class="ai-badge">🤖 AI 분석 완료</span><div class="ai-score">${score} <span style="font-size:12px; color:#999;">/ 100</span></div></div>
-                <div class="price-dual"><span style="color:var(--up); font-size:20px; font-weight:bold;">${p.toLocaleString()} KRW</span></div>
-                <div style="text-align:center; margin-bottom:15px; font-weight:bold; font-size:14px;">"현재 구간은 <span style="color:var(--up);">강한 매수</span>가 유효합니다."</div>
-                <div class="strat-grid">
-                    <div class="strat-item"><div class="strat-label">단기 지지</div><div class="strat-val" style="color:var(--up)">${sup}</div></div>
-                    <div class="strat-item"><div class="strat-label">단기 저항</div><div class="strat-val" style="color:var(--down)">${res}</div></div>
-                    <div class="strat-item"><div class="strat-label">손절가</div><div class="strat-val">${stop}</div></div>
-                    <div class="strat-item"><div class="strat-label">목표가</div><div class="strat-val">${target}</div></div>
-                </div>
-            </div>`; 
+        el('aiAnalysisContainer').innerHTML = `<div class="ai-report-box"><div class="ai-header"><span class="ai-badge">🤖 AI 분석 완료</span><div class="ai-score">${score} <span style="font-size:12px; color:#999;">/ 100</span></div></div><div class="price-dual"><span style="color:var(--up); font-size:20px; font-weight:bold;">${p.toLocaleString()} KRW</span></div><div style="text-align:center; margin-bottom:15px; font-weight:bold; font-size:14px;">"현재 구간은 <span style="color:var(--up);">강한 매수</span>가 유효합니다."</div><div class="strat-grid"><div class="strat-item"><div class="strat-label">단기 지지</div><div class="strat-val" style="color:var(--up)">${sup}</div></div><div class="strat-item"><div class="strat-label">단기 저항</div><div class="strat-val" style="color:var(--down)">${res}</div></div><div class="strat-item"><div class="strat-label">손절가</div><div class="strat-val">${stop}</div></div><div class="strat-item"><div class="strat-label">목표가</div><div class="strat-val">${target}</div></div></div></div>`; 
     }
-
     function closeBoard() { el('infoBoardContainer').style.display='none'; el('infoMenuContainer').style.display='grid'; }
     function closeDetail() { el('infoDetailContainer').style.display='none'; el('infoBoardContainer').style.display='block'; isDetailOpen=false; }
-    
     function generateMockData(k) { 
         let data = [];
         const today = new Date().toISOString().split('T')[0];
@@ -806,7 +790,6 @@
         }
         return data; 
     }
-    
     function getIndiIcon(name) {
         if(name.includes("SMA") || name.includes("EMA")) return "📈";
         if(name.includes("Bollinger")) return "⚡";
@@ -817,8 +800,6 @@
         if(name.includes("Ichimoku")) return "☁️";
         return "📉";
     }
-
-    // 1. 기본 아이콘 모달
     function initIndi() { 
         let h=''; 
         indicators.forEach(i=>{ 
@@ -829,38 +810,22 @@
         }); 
         el('indiList').innerHTML=h; 
     }
-
-    // 2. 상세 설명 모달 (바둑판식)
     function initDetailIndi() {
         let h = '';
         indicators.forEach(i => {
             const act = activeStudies.includes(i.id) ? 'active' : '';
             const icon = getIndiIcon(i.n);
-            h += `<div class="detail-indi-card ${act}" onclick="toggleIndi('${i.id}')">
-                    <div class="dic-icon">${icon}</div>
-                    <div class="dic-content">
-                        <div class="dic-name">${i.n}</div>
-                        <div class="dic-desc">${i.desc}</div>
-                    </div>
-                  </div>`;
+            h += `<div class="detail-indi-card ${act}" onclick="toggleIndi('${i.id}')"><div class="dic-icon">${icon}</div><div class="dic-content"><div class="dic-name">${i.n}</div><div class="dic-desc">${i.desc}</div></div></div>`;
         });
         el('detailIndiList').innerHTML = h;
     }
-    
     function toggleIndi(id) { 
         if(activeStudies.includes(id)) activeStudies=activeStudies.filter(x=>x!==id); 
         else activeStudies.push(id); 
-        initIndi(); 
-        initDetailIndi(); 
+        initIndi(); initDetailIndi(); 
     }
-
-    function openDetailIndiModal() {
-        initDetailIndi();
-        el('detailIndiModal').style.display='flex';
-    }
-
+    function openDetailIndiModal() { initDetailIndi(); el('detailIndiModal').style.display='flex'; }
     function applyStudies() { localStorage.setItem('activeStudies', JSON.stringify(activeStudies)); el('indiModal').style.display='none'; el('detailIndiModal').style.display='none'; if(el('page-chart').classList.contains('active')) loadChart(); }
-    
     function loadChart() {
         if(typeof TradingView === 'undefined') { setTimeout(loadChart, 500); return; }
         el('chartContainer').innerHTML = '';
@@ -873,4 +838,3 @@
 </script>
 </body>
 </html>
-
