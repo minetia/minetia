@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>암호화폐 실시간 대시보드</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#0a0a0f;--card:#12121a;--card-hover:#1a1a28;--border:#1e1e2e;
+--text:#e0e0e0;--text-dim:#888;--green:#00e676;--red:#ff1744;
+--blue:#448aff;--purple:#b388ff;--orange:#ffab40;--cyan:#18ffff;
+--yellow:#ffd740;--neon-green:#39ff14;--neon-red:#ff073a;
+}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;min-height:100vh}
+a{color:var(--cyan);text-decoration:none}
+.container{max-width:1400px;margin:0 auto;padding:12px}
+header{text-align:center;padding:20px 0 10px;border-bottom:1px solid var(--border);margin-bottom:16px}
+header h1{font-size:1.6rem;background:linear-gradient(90deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
+header p{color:var(--text-dim);font-size:.82rem}
+.status-bar{display:flex;justify-content:center;gap:16px;margin-top:8px;font-size:.75rem;color:var(--text-dim)}
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px;background:var(--green);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* 요약 */
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:16px}
+.summary-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.summary-card .label{font-size:.72rem;color:var(--text-dim);margin-bottom:4px}
+.summary-card .value{font-size:1.1rem;font-weight:700}
+
+/* 코인 카드 */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:14px;margin-bottom:20px}
+@media(max-width:500px){.cards{grid-template-columns:1fr}}
+.coin-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;transition:border-color .3s,box-shadow .3s}
+.coin-card:hover{border-color:var(--cyan);box-shadow:0 0 20px rgba(24,255,255,.08)}
+.coin-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.coin-icon{width:36px;height:36px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem}
+.coin-name{flex:1}
+.coin-name h3{font-size:1rem;margin-bottom:1px}
+.coin-name span{font-size:.72rem;color:var(--text-dim)}
+.coin-price{text-align:right}
+.coin-price .price{font-size:1.3rem;font-weight:700}
+.coin-price .price-krw{font-size:.78rem;color:var(--text-dim)}
+.flash{animation:flash-anim .5s}
+@keyframes flash-anim{0%{background:rgba(255,255,255,.1)}100%{background:transparent}}
+
+.changes{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}
+.change-item{background:rgba(255,255,255,.03);border-radius:6px;padding:6px 8px;text-align:center}
+.change-item .lbl{font-size:.65rem;color:var(--text-dim)}
+.change-item .val{font-size:.82rem;font-weight:600}
+.up{color:var(--green)}.down{color:var(--red)}
+
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0;font-size:.78rem}
+.metric{display:flex;justify-content:space-between;background:rgba(255,255,255,.02);border-radius:4px;padding:5px 8px}
+.metric .mk{color:var(--text-dim)}
+
+.sparkline-wrap{height:50px;margin:8px 0}
+.sparkline-wrap canvas{width:100%;height:100%}
+
+/* 모멘텀 */
+.momentum{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}
+.momentum-item{background:rgba(255,255,255,.03);border-radius:6px;padding:8px;text-align:center}
+.momentum-item .mlbl{font-size:.65rem;color:var(--text-dim);margin-bottom:2px}
+.momentum-item .mval{font-size:.9rem;font-weight:700}
+.rsi-bar{height:4px;border-radius:2px;background:#333;margin-top:4px;overflow:hidden}
+.rsi-fill{height:100%;border-radius:2px;transition:width .5s}
+
+/* 거래소 */
+.exchange-section{margin:10px 0}
+.exchange-section summary{font-size:.78rem;color:var(--cyan);cursor:pointer;padding:4px 0}
+.exchange-table{width:100%;border-collapse:collapse;font-size:.72rem;margin-top:6px}
+.exchange-table th{color:var(--text-dim);text-align:left;padding:4px 6px;border-bottom:1px solid var(--border)}
+.exchange-table td{padding:4px 6px;border-bottom:1px solid rgba(255,255,255,.03)}
+.premium-badge{font-size:.65rem;padding:1px 5px;border-radius:3px;font-weight:600}
+
+/* 전망 */
+.outlook{margin:8px 0;padding:8px;border-radius:6px;font-size:.78rem;border-left:3px solid var(--blue)}
+.outlook.bullish{border-left-color:var(--green);background:rgba(0,230,118,.05)}
+.outlook.bearish{border-left-color:var(--red);background:rgba(255,23,68,.05)}
+.outlook.neutral{border-left-color:var(--yellow);background:rgba(255,215,64,.05)}
+
+/* 뉴스 */
+.news-section{margin:8px 0}
+.news-section h4{font-size:.78rem;color:var(--text-dim);margin-bottom:4px}
+.news-item{font-size:.72rem;padding:3px 0;color:var(--text-dim)}
+.news-item .dot{display:inline-block;width:5px;height:5px;border-radius:50%;margin-right:5px}
+
+/* 상세 설명 */
+.detail-section{margin-top:24px}
+.detail-section h2{font-size:1.1rem;margin-bottom:14px;color:var(--cyan)}
+.detail-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:12px}
+@media(max-width:500px){.detail-grid{grid-template-columns:1fr}}
+.detail-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px}
+.detail-card h3{font-size:.95rem;margin-bottom:6px;color:var(--purple)}
+.detail-card p{font-size:.78rem;color:var(--text-dim);line-height:1.6}
+.detail-card .tags{margin-top:8px;display:flex;flex-wrap:wrap;gap:4px}
+.detail-card .tag{font-size:.65rem;background:rgba(179,136,255,.12);color:var(--purple);padding:2px 8px;border-radius:10px}
+
+footer{text-align:center;padding:20px;font-size:.7rem;color:var(--text-dim);border-top:1px solid var(--border);margin-top:20px}
+.loading{text-align:center;padding:60px;font-size:1.1rem;color:var(--text-dim)}
+.error-msg{background:rgba(255,23,68,.1);border:1px solid var(--red);border-radius:8px;padding:12px;margin:10px 0;font-size:.82rem;color:var(--red)}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>암호화폐 실시간 대시보드</h1>
+<p>BTC / ETH / XRP / ZRX / SUI / ONDO - 실시간 시세 및 분석</p>
+<div class="status-bar">
+<span><span class="status-dot" id="statusDot"></span> <span id="statusText">연결 중...</span></span>
+<span id="lastUpdate">마지막 업데이트: -</span>
+</div>
+</header>
+
+<div class="summary" id="summaryArea">
+<div class="summary-card"><div class="label">총 시가총액</div><div class="value" id="totalMcap">-</div></div>
+<div class="summary-card"><div class="label">평균 24h 변동률</div><div class="value" id="avgChange">-</div></div>
+<div class="summary-card"><div class="label">총 24h 거래량</div><div class="value" id="totalVol">-</div></div>
+<div class="summary-card"><div class="label">BTC 도미넌스 (추정)</div><div class="value" id="btcDom">-</div></div>
+</div>
+
+<div id="errorArea"></div>
+<div class="cards" id="cardsArea"><div class="loading">데이터를 불러오는 중...</div></div>
+
+<div class="detail-section">
+<h2>코인 상세 설명</h2>
+<div class="detail-grid" id="detailArea"></div>
+</div>
+</div>
+
+<footer>CoinGecko 무료 API 기반 | 5초 자동 갱신 | 투자 참고용 (투자 권유 아님)</footer>
+
+<script>
+const COINS = [
+  {id:'bitcoin',symbol:'BTC',name:'비트코인',color:'#f7931a'},
+  {id:'ethereum',symbol:'ETH',name:'이더리움',color:'#627eea'},
+  {id:'ripple',symbol:'XRP',name:'리플',color:'#00aae4'},
+  {id:'0x',symbol:'ZRX',name:'0x Protocol',color:'#302c2c'},
+  {id:'sui',symbol:'SUI',name:'수이',color:'#4da2ff'},
+  {id:'ondo-finance',symbol:'ONDO',name:'온도 파이낸스',color:'#1a3c6e'}
+];
+
+const COIN_DETAILS = {
+  bitcoin:{desc:'최초의 탈중앙화 암호화폐로, 2009년 사토시 나카모토가 개발했습니다. P2P 전자화폐 시스템으로 설계되어, 중앙 기관 없이 가치를 전송할 수 있습니다. 총 발행량 2,100만 개로 제한되어 디지털 금(Digital Gold)으로 불립니다. PoW(작업증명) 합의 알고리즘을 사용하며, 라이트닝 네트워크를 통한 확장성 개선이 진행 중입니다.',tags:['P2P','디지털 금','PoW','라이트닝 네트워크','2,100만 개 한정']},
+  ethereum:{desc:'비탈릭 부테린이 제안한 스마트 컨트랙트 플랫폼으로, 탈중앙화 애플리케이션(dApp) 개발의 기반입니다. DeFi, NFT, DAO 등 Web3 생태계의 핵심 인프라이며, 2022년 PoS(지분증명)로 전환(The Merge)하여 에너지 효율을 99% 개선했습니다. EVM(이더리움 가상머신)은 업계 표준으로 자리잡았습니다.',tags:['스마트 컨트랙트','DeFi','NFT','PoS','EVM','Layer 2']},
+  ripple:{desc:'Ripple Labs가 개발한 국제 송금 특화 암호화폐입니다. RippleNet을 통해 전통 금융기관에 빠르고 저렴한 국제 결제 솔루션을 제공합니다. 3~5초 내 거래 확정, 극히 낮은 수수료가 특징입니다. XRPL(XRP Ledger)은 독자적인 합의 프로토콜을 사용하며, CBDC 및 토큰화 자산에도 활용됩니다.',tags:['국제 송금','RippleNet','XRPL','3초 결제','금융기관 파트너십']},
+  '0x':{desc:'탈중앙화 거래소(DEX) 인프라를 위한 오픈 프로토콜입니다. 0x API를 통해 여러 DEX의 유동성을 통합하여 최적의 토큰 교환 경로를 제공합니다. Matcha 등의 DEX 애그리게이터 서비스를 지원하며, 이더리움을 비롯한 여러 EVM 체인에서 작동합니다. ZRX는 거버넌스 토큰으로 프로토콜 업그레이드 투표에 사용됩니다.',tags:['DEX 프로토콜','유동성 통합','0x API','거버넌스','EVM 멀티체인']},
+  sui:{desc:'Move 프로그래밍 언어를 기반으로 한 고성능 Layer 1 블록체인입니다. Mysten Labs가 개발했으며, 객체 중심 데이터 모델과 병렬 트랜잭션 처리로 높은 처리량과 낮은 지연시간을 구현합니다. 게임, 소셜, DeFi 등 소비자 친화적 dApp에 최적화되어 있으며, zkLogin 등 혁신적 사용자 경험을 제공합니다.',tags:['Move 언어','L1 블록체인','병렬 처리','객체 모델','zkLogin']},
+  'ondo-finance':{desc:'실물자산 토큰화(RWA) 전문 DeFi 프로토콜입니다. 미국 국채, 회사채 등 전통 금융 자산을 블록체인에서 토큰화하여 접근성을 높입니다. USDY(수익형 스테이블코인), OUSG(미국 국채 토큰) 등의 상품을 제공하며, BlackRock 등 대형 자산운용사와 협력합니다. TradFi와 DeFi를 연결하는 핵심 인프라입니다.',tags:['RWA','실물자산 토큰화','미국 국채','USDY','BlackRock 협력']}
+};
+
+const EXCHANGES = {
+  bitcoin:{domestic:['업비트','빗썸','코인원'],global:['바이낸스','코인베이스','크라켄','OKX','Bybit','Bitfinex']},
+  ethereum:{domestic:['업비트','빗썸','코인원'],global:['바이낸스','코인베이스','크라켄','OKX','Bybit','Bitfinex']},
+  ripple:{domestic:['업비트','빗썸','코인원'],global:['바이낸스','코인베이스','크라켄','OKX','Bybit','Bitstamp']},
+  '0x':{domestic:['업비트','빗썸'],global:['바이낸스','코인베이스','크라켄','OKX','Gate.io']},
+  sui:{domestic:['업비트','빗썸','코인원'],global:['바이낸스','코인베이스','OKX','Bybit','KuCoin','Gate.io']},
+  'ondo-finance':{domestic:['업비트','빗썸'],global:['바이낸스','코인베이스','OKX','Bybit','Gate.io']}
+};
+
+const NEWS_DATA = {
+  bitcoin:[
+    {type:'info',text:'비트코인 ETF 순유입 지속 중'},
+    {type:'info',text:'다음 반감기: 2028년 예정'},
+    {type:'good',text:'기관 투자 확대 추세'}
+  ],
+  ethereum:[
+    {type:'good',text:'Pectra 업그레이드 진행 중'},
+    {type:'info',text:'Layer 2 생태계 확장 중'},
+    {type:'good',text:'ETH ETF 스테이킹 논의'}
+  ],
+  ripple:[
+    {type:'good',text:'SEC 소송 종결, 규제 명확화'},
+    {type:'info',text:'RLUSD 스테이블코인 출시'},
+    {type:'good',text:'글로벌 금융기관 파트너십 확대'}
+  ],
+  '0x':[
+    {type:'info',text:'0x v4 프로토콜 업그레이드'},
+    {type:'info',text:'멀티체인 확장 진행'},
+    {type:'good',text:'DEX 거래량 증가 추세'}
+  ],
+  sui:[
+    {type:'good',text:'Mysticeti 합의 업그레이드 완료'},
+    {type:'info',text:'게임 및 소셜 dApp 생태계 확장'},
+    {type:'good',text:'TVL(총 예치 금액) 성장세'}
+  ],
+  'ondo-finance':[
+    {type:'good',text:'BlackRock BUIDL 펀드 연계'},
+    {type:'info',text:'RWA 시장 급성장 수혜'},
+    {type:'good',text:'다중 체인 확장 진행 중'}
+  ]
+};
+
+let prevPrices = {};
+let sparkData = {};
+let tickerCache = {};
+
+function fmt(n,d=2){if(n==null)return '-';if(n>=1e12)return(n/1e12).toFixed(d)+'T';if(n>=1e9)return(n/1e9).toFixed(d)+'B';if(n>=1e6)return(n/1e6).toFixed(d)+'M';if(n>=1e3)return(n/1e3).toFixed(d)+'K';return n.toFixed(d)}
+function fmtKRW(n){if(n==null)return '-';if(n>=1e12)return(n/1e12).toFixed(1)+'조';if(n>=1e8)return(n/1e8).toFixed(1)+'억';if(n>=1e4)return(n/1e4).toFixed(1)+'만';return n.toLocaleString('ko-KR')}
+function fmtPrice(n){if(n==null)return '-';return n>=1?'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'$'+n.toFixed(6)}
+function fmtPriceKRW(n){if(n==null)return '-';return n.toLocaleString('ko-KR',{maximumFractionDigits:0})+'원'}
+function chgClass(v){return v>0?'up':v<0?'down':''}
+function chgSign(v){return v>0?'+':''}
+function calcRSI(prices){
+  if(!prices||prices.length<15)return 50;
+  let gains=0,losses=0;
+  for(let i=prices.length-14;i<prices.length;i++){
+    let d=prices[i]-prices[i-1];
+    if(d>0)gains+=d;else losses-=d;
+  }
+  if(losses===0)return 100;
+  let rs=gains/losses;
+  return 100-(100/(1+rs));
+}
+function rsiColor(v){return v>70?'var(--red)':v<30?'var(--green)':'var(--yellow)'}
+function rsiLabel(v){return v>70?'과매수':v<30?'과매도':'중립'}
+function outlookInfo(rsi,chg24,volChg){
+  let score=0;
+  if(rsi>60)score--;if(rsi<40)score++;if(rsi>70)score--;if(rsi<30)score++;
+  if(chg24>3)score++;if(chg24>7)score+=2;if(chg24<-3)score--;if(chg24<-7)score-=2;
+  if(volChg>20)score++;if(volChg<-20)score--;
+  if(score>=2)return{cls:'bullish',icon:'▲',text:'단기 상승 모멘텀이 감지됩니다. 거래량 증가와 가격 상승세가 동반되고 있습니다.'};
+  if(score<=-2)return{cls:'bearish',icon:'▼',text:'단기 하락 압력이 존재합니다. RSI 및 가격 변동률을 주시하세요.'};
+  return{cls:'neutral',icon:'■',text:'뚜렷한 방향성 없이 횡보 중입니다. 거래량 변화를 주시하세요.'};
+}
+
+async function fetchPrices(){
+  const ids=COINS.map(c=>c.id).join(',');
+  const url='https://api.coingecko.com/api/v3/simple/price?ids='+ids+'&vs_currencies=usd,krw&include_24hr_vol=true&include_24hr_change=true&include_market_cap=true&include_last_updated_at=true';
+  const r=await fetch(url);
+  if(!r.ok)throw new Error('API 응답 오류: '+r.status);
+  return r.json();
+}
+
+async function fetchMarketData(){
+  const ids=COINS.map(c=>c.id).join(',');
+  const url='https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids+'&order=market_cap_desc&sparkline=true&price_change_percentage=1h,24h,7d';
+  const r=await fetch(url);
+  if(!r.ok)throw new Error('Market API 오류: '+r.status);
+  return r.json();
+}
+
+async function fetchTickers(coinId){
+  try{
+    const url='https://api.coingecko.com/api/v3/coins/'+coinId+'/tickers?include_exchange_logo=false&depth=false';
+    const r=await fetch(url);
+    if(!r.ok)return[];
+    const d=await r.json();
+    return d.tickers||[];
+  }catch(e){return[];}
+}
+
+function renderCards(priceData,marketData){
+  const area=document.getElementById('cardsArea');
+  let html='';
+  let totalMcap=0,totalVol=0,changes=[];
+
+  COINS.forEach(coin=>{
+    const p=priceData[coin.id]||{};
+    const m=(marketData||[]).find(x=>x.id===coin.id)||{};
+    const usd=p.usd||m.current_price||0;
+    const krw=p.krw||0;
+    const chg24=p.usd_24h_change||m.price_change_percentage_24h||0;
+    const vol24=p.usd_24h_vol||m.total_volume||0;
+    const mcap=p.usd_market_cap||m.market_cap||0;
+    const chg1h=m.price_change_percentage_1h_in_currency||0;
+    const chg7d=m.price_change_percentage_7d_in_currency||0;
+    const sparkPrices=m.sparkline_in_7d?m.sparkline_in_7d.price:[];
+
+    totalMcap+=mcap;totalVol+=vol24;changes.push(chg24);
+
+    if(sparkPrices.length>0)sparkData[coin.id]=sparkPrices;
+    const sp=sparkData[coin.id]||[];
+    const rsi=calcRSI(sp);
+    const volChg=prevPrices[coin.id]?(((vol24-prevPrices[coin.id].vol)/prevPrices[coin.id].vol)*100):0;
+    const prevUsd=prevPrices[coin.id]?prevPrices[coin.id].usd:usd;
+    const flashClass=Math.abs(usd-prevUsd)>0.0001?'flash':'';
+    const diff24=usd*(chg24/100)/(1+chg24/100);
+    const ol=outlookInfo(rsi,chg24,volChg);
+    const exInfo=EXCHANGES[coin.id]||{domestic:[],global:[]};
+    const news=NEWS_DATA[coin.id]||[];
+    const tickers=tickerCache[coin.id]||[];
+
+    // 거래소별 가격
+    let exRows='';
+    let domesticAvg=0,globalAvg=0,dCount=0,gCount=0;
+    tickers.slice(0,15).forEach(t=>{
+      const eName=t.market?t.market.name:'';
+      const ePrice=t.converted_last?t.converted_last.usd:0;
+      if(!ePrice)return;
+      const diff=usd>0?((ePrice-usd)/usd*100):0;
+      const isDomestic=['Upbit','Bithumb','Coinone'].some(d=>eName.includes(d));
+      if(isDomestic){domesticAvg+=ePrice;dCount++}else{globalAvg+=ePrice;gCount++}
+      const diffCls=diff>0?'up':'down';
+      const premBg=diff>1?'background:rgba(0,230,118,.15);color:var(--green)':diff<-1?'background:rgba(255,23,68,.15);color:var(--red)':'background:rgba(255,255,255,.08);color:var(--text-dim)';
+      exRows+='<tr><td>'+eName+'</td><td>'+fmtPrice(ePrice)+'</td><td class="'+diffCls+'"><span class="premium-badge" style="'+premBg+'">'+(diff>0?'+':'')+diff.toFixed(2)+'%</span></td></tr>';
+    });
+
+    let kimchiPremium='-';
+    if(dCount>0&&gCount>0){
+      domesticAvg/=dCount;globalAvg/=gCount;
+      const kp=((domesticAvg-globalAvg)/globalAvg*100);
+      kimchiPremium='<span class="'+(kp>0?'up':'down')+'">'+(kp>0?'+':'')+kp.toFixed(2)+'%</span>';
+    }
+
+    html+='<div class="coin-card '+flashClass+'" id="card-'+coin.id+'">';
+    html+='<div class="coin-header">';
+    html+='<div class="coin-icon" style="background:'+coin.color+';color:#fff">'+coin.symbol.slice(0,2)+'</div>';
+    html+='<div class="coin-name"><h3>'+coin.name+' ('+coin.symbol+')</h3><span>'+coin.id+'</span></div>';
+    html+='<div class="coin-price"><div class="price '+chgClass(chg24)+'">'+fmtPrice(usd)+'</div><div class="price-krw">'+fmtPriceKRW(krw)+'</div></div>';
+    html+='</div>';
+
+    html+='<div class="changes">';
+    html+='<div class="change-item"><div class="lbl">1시간</div><div class="val '+chgClass(chg1h)+'">'+chgSign(chg1h)+chg1h.toFixed(2)+'%</div></div>';
+    html+='<div class="change-item"><div class="lbl">24시간</div><div class="val '+chgClass(chg24)+'">'+chgSign(chg24)+chg24.toFixed(2)+'%</div></div>';
+    html+='<div class="change-item"><div class="lbl">7일</div><div class="val '+chgClass(chg7d)+'">'+chgSign(chg7d)+chg7d.toFixed(2)+'%</div></div>';
+    html+='</div>';
+
+    html+='<div class="metrics">';
+    html+='<div class="metric"><span class="mk">등락폭(24h)</span><span class="'+chgClass(diff24)+'">'+chgSign(diff24)+fmtPrice(Math.abs(diff24))+'</span></div>';
+    html+='<div class="metric"><span class="mk">거래량(24h)</span><span>$'+fmt(vol24)+'</span></div>';
+    html+='<div class="metric"><span class="mk">시가총액</span><span>$'+fmt(mcap)+'</span></div>';
+    html+='<div class="metric"><span class="mk">시총(KRW)</span><span>'+fmtKRW(mcap*(krw/usd||1350))+'</span></div>';
+    html+='</div>';
+
+    html+='<div class="sparkline-wrap"><canvas id="spark-'+coin.id+'"></canvas></div>';
+
+    html+='<div class="momentum">';
+    html+='<div class="momentum-item"><div class="mlbl">RSI (근사치)</div><div class="mval" style="color:'+rsiColor(rsi)+'">'+rsi.toFixed(1)+' ('+rsiLabel(rsi)+')</div><div class="rsi-bar"><div class="rsi-fill" style="width:'+rsi+'%;background:'+rsiColor(rsi)+'"></div></div></div>';
+    html+='<div class="momentum-item"><div class="mlbl">거래량 변화</div><div class="mval '+chgClass(volChg)+'">'+chgSign(volChg)+volChg.toFixed(1)+'%</div></div>';
+    html+='</div>';
+
+    html+='<div class="outlook '+ol.cls+'">'+ol.icon+' <strong>전망:</strong> '+ol.text+'</div>';
+
+    // 거래소
+    html+='<details class="exchange-section"><summary>거래소 정보 (국내: '+exInfo.domestic.join(', ')+' / 해외: '+exInfo.global.join(', ')+')  |  김치 프리미엄: '+kimchiPremium+'</summary>';
+    if(exRows){
+      html+='<table class="exchange-table"><thead><tr><th>거래소</th><th>가격(USD)</th><th>차이</th></tr></thead><tbody>'+exRows+'</tbody></table>';
+    }else{
+      html+='<p style="font-size:.72rem;color:var(--text-dim);padding:6px 0">거래소 데이터 로딩 중...</p>';
+    }
+    html+='</details>';
+
+    // 뉴스
+    html+='<div class="news-section"><h4>이벤트 / 뉴스</h4>';
+    news.forEach(n=>{
+      const dotColor=n.type==='good'?'var(--green)':n.type==='bad'?'var(--red)':'var(--blue)';
+      html+='<div class="news-item"><span class="dot" style="background:'+dotColor+'"></span>'+n.text+'</div>';
+    });
+    html+='</div>';
+
+    html+='</div>';
+
+    prevPrices[coin.id]={usd:usd,vol:vol24};
+  });
+
+  area.innerHTML=html;
+
+  // Summary
+  const avgChg=changes.length>0?changes.reduce((a,b)=>a+b,0)/changes.length:0;
+  const btcMcap=priceData.bitcoin?priceData.bitcoin.usd_market_cap||0:0;
+  const dom=totalMcap>0?(btcMcap/totalMcap*100):0;
+  document.getElementById('totalMcap').textContent='$'+fmt(totalMcap,1);
+  document.getElementById('totalMcap').className='value '+chgClass(avgChg);
+  const avgEl=document.getElementById('avgChange');
+  avgEl.textContent=chgSign(avgChg)+avgChg.toFixed(2)+'%';
+  avgEl.className='value '+chgClass(avgChg);
+  document.getElementById('totalVol').textContent='$'+fmt(totalVol,1);
+  document.getElementById('btcDom').textContent=dom.toFixed(1)+'%';
+
+  // Sparklines
+  COINS.forEach(coin=>{
+    const sp=sparkData[coin.id]||[];
+    if(sp.length<2)return;
+    const canvas=document.getElementById('spark-'+coin.id);
+    if(!canvas)return;
+    const ctx=canvas.getContext('2d');
+    const existing=Chart.getChart(canvas);
+    if(existing)existing.destroy();
+    const isUp=sp[sp.length-1]>=sp[0];
+    const color=isUp?'rgba(0,230,118,':'rgba(255,23,68,';
+    new Chart(ctx,{
+      type:'line',
+      data:{labels:sp.map((_,i)=>i),datasets:[{data:sp,borderColor:color+'1)',backgroundColor:color+'0.1)',fill:true,pointRadius:0,borderWidth:1.5,tension:.3}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{display:false},y:{display:false}},animation:{duration:0}}
+    });
+  });
+}
+
+function renderDetails(){
+  const area=document.getElementById('detailArea');
+  let html='';
+  COINS.forEach(coin=>{
+    const d=COIN_DETAILS[coin.id]||{desc:'-',tags:[]};
+    html+='<div class="detail-card">';
+    html+='<h3 style="color:'+coin.color+'">'+coin.symbol+' - '+coin.name+'</h3>';
+    html+='<p>'+d.desc+'</p>';
+    html+='<div class="tags">'+d.tags.map(t=>'<span class="tag">'+t+'</span>').join('')+'</div>';
+    html+='</div>';
+  });
+  area.innerHTML=html;
+}
+
+let tickerIdx=0;
+async function fetchTickersRotating(){
+  const coin=COINS[tickerIdx%COINS.length];
+  tickerIdx++;
+  const tickers=await fetchTickers(coin.id);
+  if(tickers.length>0)tickerCache[coin.id]=tickers;
+}
+
+async function update(){
+  try{
+    const[priceData,marketData]=await Promise.all([fetchPrices(),fetchMarketData()]);
+    renderCards(priceData,marketData);
+    document.getElementById('statusDot').style.background='var(--green)';
+    document.getElementById('statusText').textContent='실시간 연결됨';
+    document.getElementById('lastUpdate').textContent='마지막 업데이트: '+new Date().toLocaleTimeString('ko-KR');
+    document.getElementById('errorArea').innerHTML='';
+  }catch(e){
+    console.error(e);
+    document.getElementById('statusDot').style.background='var(--red)';
+    document.getElementById('statusText').textContent='연결 오류';
+    document.getElementById('errorArea').innerHTML='<div class="error-msg">API 오류: '+e.message+' (자동 재시도 중...)</div>';
+  }
+}
+
+renderDetails();
+update();
+setInterval(update,5000);
+setInterval(fetchTickersRotating,8000);
+setTimeout(fetchTickersRotating,2000);
+</script>
+</body>
+</html>
